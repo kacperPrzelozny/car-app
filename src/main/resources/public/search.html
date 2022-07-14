@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search</title>
+    <script>
+        let fetchPostAsync = async () => {
+            const options = {
+                method: "POST",
+            };
+            let response = await fetch("/dane", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+
+        }
+        let generateFetchAsync = async () => {
+            const options = {
+                method: "POST",
+            };
+            let response = await fetch("/generate", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+
+        }
+        let generateTable = async () => {
+            let json = await fetchPostAsync()
+            console.log(json)
+            let table = document.getElementById("table")
+            table.innerHTML = ""
+            json.map( async (car, index)=>{
+                let tr = document.createElement("tr")
+                let id = document.createElement("td")
+                id.innerHTML = index+1
+                let uuid = document.createElement("td")
+                uuid.innerHTML = car.uuid
+                let model = document.createElement("td")
+                model.innerHTML = car.model
+                let year = document.createElement("td")
+                year.innerHTML = car.year
+                let color = document.createElement("td")
+                color.style.backgroundColor = car.color
+                color.style.width = "50px"
+
+                let airbags = document.createElement("td")
+                console.log(car.airbags)
+                let airbagsInner = car.airbags.map(airbag=>{
+                    return airbag.description + " - " + airbag.value;
+                })
+                airbags.innerHTML = airbagsInner
+
+                let photo = document.createElement("td")
+                photo.innerHTML = "<img src='./"+car.model.toLowerCase()+".jpg' width='50px'>";
+
+                let date = document.createElement("td")
+                date.innerHTML = car.date
+                let price = document.createElement("td")
+                price.innerHTML = car.price
+                price.style.width = "70px"
+                let vat = document.createElement("td")
+                vat.innerHTML = car.vat
+                tr.appendChild(id)
+                tr.appendChild(uuid)
+                tr.appendChild(model)
+                tr.appendChild(year)
+                tr.appendChild(color)
+                tr.appendChild(airbags)
+                tr.appendChild(photo)
+                tr.appendChild(date)
+                tr.appendChild(price)
+                tr.appendChild(vat)
+
+                table.appendChild(tr)
+            })
+        }
+        const generateAllCarsPDF = async () => {
+            const options = {
+                method: "POST",
+            };
+            let response = await fetch("https://kacper-przelozny-3p1-javaapp.herokuapp.com/generateAllCars", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+        }
+        const generateCarsByYearPDF = async () => {
+            let year = document.getElementById("years").value
+            let data = JSON.stringify({year})
+            const options = {
+                method: "POST",
+                body:data
+            };
+            let response = await fetch("https://kacper-przelozny-3p1-javaapp.herokuapp.com/generateCarsByYear", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+        }
+        const generateCarsByPricePDF = async () => {
+            let min = document.getElementById("min").value
+            let max = document.getElementById("max").value
+
+            let data = JSON.stringify({min,max})
+            const options = {
+                method: "POST",
+                body:data
+            };
+            let response = await fetch("https://kacper-przelozny-3p1-javaapp.herokuapp.com/generateCarsByPrice", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+        }
+        window.addEventListener("DOMContentLoaded", async ()=>{
+            document.getElementById("generate").onclick = async () => {
+                await generateFetchAsync();
+                await generateTable();
+            }
+            const select = document.getElementById("years")
+            for(let i = 2000; i <= 2010; i++){
+                select.innerHTML += `<option value="${i}">${i}</option>`
+            }
+            document.getElementById("allCars").onclick = async () => {
+                const timestamp = await generateAllCarsPDF();
+                console.log(timestamp)
+                let a = document.getElementById("downloadAllCars")
+                a.innerHTML = "pobierz"
+                a.setAttribute("href", "https://kacper-przelozny-3p1-javaapp.herokuapp.com/downloadAllCarsPDF?timestamp="+timestamp[0]);
+            }
+            document.getElementById("carsFromYear").onclick = async () => {
+                const timestamp = await generateCarsByYearPDF()
+                console.log(timestamp)
+                let a = document.getElementById("downloadCarsFromYear")
+                a.innerHTML = "pobierz"
+                a.setAttribute("href", "https://kacper-przelozny-3p1-javaapp.herokuapp.com/downloadCarsByYearPDF?timestamp="+timestamp[0]);
+            }
+            document.getElementById("carsFromPrices").onclick = async () => {
+                const timestamp = await generateCarsByPricePDF()
+                console.log(timestamp)
+                let a = document.getElementById("downloadCarsByPrices")
+                a.innerHTML = "pobierz"
+                a.setAttribute("href", "https://kacper-przelozny-3p1-javaapp.herokuapp.com/downloadCarsByPricePDF?timestamp="+timestamp[0]);
+            }
+            await generateTable()
+        })
+    </script>
+    <style>
+        td{
+            min-width: 70px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<h1>Search invoices page</h1>
+<button id="generate">generuj losową baze samochodów</button>
+<a href="index.html">main page</a>
+<a href="admin.html">admin page</a>
+<a href="chart.html">editing table</a>
+<p>faktura za wszystkie auta <button id="allCars">generuj fakturę</button>&nbsp;<a href="" id="downloadAllCars"></a></p>
+<p>faktura za auta z daneg rocznika <select id="years"></select>&nbsp;<button id="carsFromYear">generuj fakturę</button>&nbsp;<a href="" id="downloadCarsFromYear"></a></p>
+<p>faktura za wszystkie auta - od:<input type="number" id="min"> do:<input type="number" id="max">&nbsp;<button id="carsFromPrices">generuj fakturę</button>&nbsp;<a href="" id="downloadCarsByPrices"></a></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>nr</th>
+        <th>id</th>
+        <th>model</th>
+        <th>year</th>
+        <th>color</th>
+        <th>airbags</th>
+        <th>photo</th>
+        <th>sell date</th>
+        <th>price</th>
+        <th>vat</th>
+    </tr>
+    </thead>
+    <tbody id="table">
+
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dane</title>
+    <script>
+        fetchPostAsync = async () => {
+            const options = {
+                method: "POST",
+            };
+            let response = await fetch("/dane", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+
+        }
+        generateTable = async () => {
+            let json = await fetchPostAsync()
+            console.log(json)
+            let table = document.getElementById("table")
+            table.innerHTML = ""
+            json.map( async (car, index)=>{
+                let tr = document.createElement("tr")
+                let id = document.createElement("td")
+                id.innerHTML = index+1
+                let uuid = document.createElement("td")
+                uuid.innerHTML = car.uuid
+                let model = document.createElement("td")
+                model.innerHTML = car.model
+                let year = document.createElement("td")
+                year.innerHTML = car.year
+                let color = document.createElement("td")
+                color.style.backgroundColor = car.color
+                color.style.width = "50px"
+                let edit = document.createElement("td")
+                let editButton = document.createElement("button")
+                editButton.innerHTML = "Edit"
+                editButton.onclick = () => {
+                    editForm(car.uuid)
+                }
+                let del = document.createElement("td")
+                let deleteButton = document.createElement("button")
+                deleteButton.innerHTML = "Delete"
+                deleteButton.onclick = async () => {
+                   await deleteCar(car.uuid)
+                }
+                edit.appendChild(editButton)
+                del.appendChild(deleteButton)
+                tr.appendChild(id)
+                tr.appendChild(uuid)
+                tr.appendChild(model)
+                tr.appendChild(year)
+                tr.appendChild(color)
+                tr.appendChild(edit)
+                tr.appendChild(del)
+                table.appendChild(tr)
+            })
+        }
+        window.addEventListener("DOMContentLoaded", async ()=>{
+            await generateTable()
+        })
+
+        function editForm(uuid){
+            console.log(uuid)
+            let box = document.getElementById("editForm")
+            box.style.display = "block"
+            let cancel = document.getElementById("cancelButton")
+            cancel.onclick = () => {
+                box.style.display = "none"
+            }
+            edit = document.getElementById("editButton")
+            edit.onclick = async () => {
+                let year = document.getElementById("year").value
+                let model = document.getElementById("model").value
+                editFetchAsync = async () => {
+                    const data = {uuid, year, model}
+                    const options = {
+                        method: "POST",
+                        body: JSON.stringify(data)
+                    };
+
+                    let response = await fetch("/edit", options)
+                    if (!response.ok)
+                        return response.status
+                    else{
+                        await generateTable()
+                        return await response.json() // response.json
+                    }
+
+
+
+
+                }
+                let json = editFetchAsync()
+
+                box.style.display = "none"
+            }
+        }
+        async function deleteCar(uuid){
+            deleteFetchAsync = async () => {
+                const data = {uuid}
+                const options = {
+                    method: "POST",
+                    body: JSON.stringify(data)
+                };
+
+                let response = await fetch("/delete", options)
+                if (!response.ok)
+                    return response.status
+                else
+                    return await response.json() // response.json
+
+            }
+            let json = deleteFetchAsync()
+            await generateTable()
+
+        }
+    </script>
+    <style>
+        .box{
+            position: absolute;
+            z-index: 100;
+            display: none;
+        }
+        .form{
+            margin-left: auto;
+            margin-right: auto;
+            width: 200px;
+            background-color: aqua;
+            text-align: center;
+            margin-top: 50px;
+        }
+        input, select, .form>button{
+            margin: 20px 10px;
+        }
+        table{
+            border-collapse: collapse;
+        }
+        td{
+            border: 1px solid black;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <table>
+    <thead>
+    <tr>
+        <th>nr</th>
+        <th>id</th>
+        <th>model</th>
+        <th>year</th>
+        <th>color</th>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+        <tbody id="table">
+
+        </tbody>
+    </table>
+    <div class="box" id="editForm">
+        <div class="form">
+            <input type="text" id="model">
+            <select name="year" id="year" required>
+                <option value='2000'>2000</option>
+                <option value='2001'>2001</option>
+                <option value='2002'>2002</option>
+                <option value='2003'>2003</option>
+                <option value='2004'>2004</option>
+                <option value='2005'>2005</option>
+                <option value='2006'>2006</option>
+                <option value='2007'>2007</option>
+                <option value='2008'>2008</option>
+                <option value='2009'>2009</option>
+                <option value='2010'>2010</option>
+            </select>
+            <button id="editButton">Edytuj</button>
+            <button id="cancelButton">Cancel</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cars</title>
+    <style>
+        div{
+            background-color: lightgrey;
+            padding: 20px;
+        }
+        form{
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        select{
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<h2>02: car manager, post, fetch</h2>
+<div>
+        <input type="text" name="model"  id="model" required>
+        <select name="year" id="year" required>
+            <option value='2000'>2000</option>
+            <option value='2001'>2001</option>
+            <option value='2002'>2002</option>
+            <option value='2003'>2003</option>
+            <option value='2004'>2004</option>
+            <option value='2005'>2005</option>
+            <option value='2006'>2006</option>
+            <option value='2007'>2007</option>
+            <option value='2008'>2008</option>
+            <option value='2009'>2009</option>
+            <option value='2010'>2010</option>
+        </select>
+        <div>poduszki powietrzne: kierowca | pasażer | tylna kanapa | boczne z tyłu
+            <input type="checkbox" id="kierowca" name="kierowca">
+            <input type="checkbox" id="pasazer" name="pasazer">
+            <input type="checkbox" id="kanapa" name="kanapa">
+            <input type="checkbox" id="boczne" name="boczne">
+        </div>
+        <input type="color" id="color" name="color">
+        <button id="submit">Dodaj auto</button>
+</div>
+<p><a href="./chart.html">strona z danymi</a></p>
+<p><a href="./admin.html">admin page</a></p>
+<p><a href="./search.html">search page</a></p>
+
+<script>
+    fetchPostAsync = async () => {
+        let year = document.getElementById("year").value
+        let model = document.getElementById("model").value
+        let airbags = [
+            {description:"kierowca",value:document.getElementById("kierowca").checked},
+            {description:"pasazer",value:document.getElementById("pasazer").checked},
+            {description:"kanapa",value:document.getElementById("kanapa").checked},
+            {description:"boczne",value:document.getElementById("boczne").checked}
+        ];
+        let color = document.getElementById("color").value
+        const data = JSON.stringify({
+            model, year, airbags, color
+        })
+        console.log(data)
+        const options = {
+            method: "POST",
+            body: data,
+        };
+
+        let response = await fetch("/add", options)
+
+        if (!response.ok)
+            return response.status
+        else
+            return await response.json() // response.json
+
+    }
+    document.getElementById("submit").onclick = async () => {
+        let json = await fetchPostAsync()
+        window.confirm(JSON.stringify(json, null, 5))
+    }
+</script>
+</body>
+</html>

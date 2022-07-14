@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin page</title>
+    <script>
+        fetchPostAsync = async () => {
+            const options = {
+                method: "POST",
+            };
+            let response = await fetch("https://kacper-przelozny-3p1-javaapp.herokuapp.com/dane", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+
+        }
+        generateFetchAsync = async () => {
+            const options = {
+                method: "POST",
+            };
+            let response = await fetch("https://kacper-przelozny-3p1-javaapp.herokuapp.com/generate", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+
+        }
+        generatePDFAsync = async (uuid) => {
+            const data = {uuid}
+            const options = {
+                method: "POST",
+                body: JSON.stringify(data)
+            };
+
+            let response = await fetch("https://kacper-przelozny-3p1-javaapp.herokuapp.com/pdf", options)
+            if (!response.ok)
+                return response.status
+            else{
+                await generateTable()
+                return await response.json() // response.json
+            }
+
+
+        }
+        generateTable = async () => {
+            let json = await fetchPostAsync()
+            console.log(json)
+            let table = document.getElementById("table")
+            table.innerHTML = ""
+            json.map( async (car, index)=>{
+                let tr = document.createElement("tr")
+                let id = document.createElement("td")
+                id.innerHTML = index+1
+                let uuid = document.createElement("td")
+                uuid.innerHTML = car.uuid
+                let model = document.createElement("td")
+                model.innerHTML = car.model
+                let year = document.createElement("td")
+                year.innerHTML = car.year
+                let color = document.createElement("td")
+                color.style.backgroundColor = car.color
+                color.style.width = "50px"
+                let pdf = document.createElement("td")
+                let pdfButton = document.createElement("button")
+                pdfButton.innerHTML = "generate PDF VAT"
+                pdfButton.onclick = async () => {
+                    let json = await generatePDFAsync(car.uuid)
+                }
+
+                let download = document.createElement("td")
+                if(car.pdf){
+                    let downloadButton = document.createElement("a")
+                    downloadButton.innerHTML = "pobierz"
+                    downloadButton.setAttribute("href", "https://kacper-przelozny-3p1-javaapp.herokuapp.com/downloadPDF?uuid="+car.uuid)
+                    downloadButton.onclick = async () => {
+                        await downloadPDF(car.uuid)
+                    }
+                    download.appendChild(downloadButton)
+                }
+                pdf.appendChild(pdfButton)
+                tr.appendChild(id)
+                tr.appendChild(uuid)
+                tr.appendChild(model)
+                tr.appendChild(year)
+                tr.appendChild(color)
+                tr.appendChild(pdf)
+                tr.appendChild(download)
+                table.appendChild(tr)
+            })
+        }
+        window.addEventListener("DOMContentLoaded", async ()=>{
+            document.getElementById("generate").onclick = async () => {
+                await generateFetchAsync();
+                await generateTable();
+            }
+        })
+        generatePDF = async (uuid) => {
+
+        }
+        downloadPDF = async (uuid) => {
+
+        }
+    </script>
+</head>
+<body>
+    <h1>Admin page</h1>
+    <button id="generate">generuj losową baze samochodów</button>
+    <a href="chart.html">delete/update cars</a>
+    <a href="index.html">main page</a>
+
+    <table>
+        <thead>
+        <tr>
+            <th>nr</th>
+            <th>id</th>
+            <th>model</th>
+            <th>year</th>
+            <th>color</th>
+            <th>faktura</th>
+            <th>pobieranie</th>
+        </tr>
+        </thead>
+        <tbody id="table">
+
+        </tbody>
+    </table>
+</body>
+</html>
